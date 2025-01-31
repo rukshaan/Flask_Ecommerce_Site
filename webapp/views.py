@@ -1,8 +1,13 @@
 from flask import Blueprint,render_template,flash,redirect,request,jsonify
 from flask_login import login_required,current_user
-from .models import Product,Cart
+from .models import Product,Cart,Order
 from . import db
+from intasend import APIService
 views=Blueprint('views',__name__)
+
+API_PUBLISHABLE_KEY='ISPubKey_test_4aaa7726-4542-4c38-a284-70afe13103fd'
+
+API_TOKEN='ISSecretKey_test_da9dd0d3-ecfd-4d1f-8b9e-7cbadf6c3f7b'
 
 @views.route('/')
 def home():
@@ -125,4 +130,33 @@ def remove_cart():
         }
         return jsonify(data)
     
-    
+@views.route('/place-order')   
+@login_required
+def place_order():
+    customer_cart=Cart.query.filter_by(customer_link=current_user.id)
+    try:
+        if customer_cart:
+            total=0
+            for item in customer_cart:
+                total+=item.product.current_price *item.quantity
+                
+                service=APIService(token=API_TOKEN,publishable_key=API_PUBLISHABLE_KEY,test=True)
+                create_order_response=service.collect.mpesa_tk_push(phone_number='0778901558',email=current_user.email,amount=total+200,narrative='Purchase of goods')
+
+            for item in customer_cart:
+                new_order=Order()
+                new_order.quantity=item.quantity
+                new_order.price=item.current_price
+                new_order.status=create_order_response['invoice']['state']
+                new_order.payment_id=create_order_response['id']
+                new_order.product_link=item.customer_link
+                db.session.add(new_order)
+                product=Product.query.get(item.product_link)
+                product.in_stock=item.quantity
+                db.session.commit()
+                return "order Placed"
+                
+    except Exception as e:
+        print(e)
+        print("order is not placed")
+        return redirect("/")
