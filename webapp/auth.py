@@ -10,6 +10,7 @@ auth=Blueprint('auth',__name__)
 
 @auth.route('/login',methods=['GET','POST'])
 def login():
+    
     if current_user.is_authenticated:  # If the user is already logged in, redirect them to the main home
         return redirect(url_for('/'))
     

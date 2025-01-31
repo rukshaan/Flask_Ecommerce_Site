@@ -51,6 +51,8 @@ def create_app():
     app.register_blueprint(auth, url_prefix='/')
     app.register_blueprint(admin, url_prefix='/')
 
+    # with app.app_context():
+    #     create_database(app)
    
 
     @login_manager.user_loader
