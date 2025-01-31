@@ -78,35 +78,6 @@ def profile(customer_id):
     customer=Customer.query.get(customer_id);
     return render_template('profile.html',customer=customer)
 
-# @auth.route('/change_password/<int:customer_id>', methods=['GET','POST'])
-# @login_required
-# def change_password(customer_id):
-#     if current_user.id != customer_id:
-#         flash("You cannot change someone else's password", "danger")
-#         return redirect(url_for('auth.profile', customer_id=current_user.id))
-
-#     form=PasswordChangedForm()
-#     customer=Customer.query.get(customer_id)
-#     if form.validate_on_submit():
-#         current_password=form.current_password.data
-#         new_password=form.new_password.data
-#         confirm_new_password=form.confirm_new_password.data
-        
-         
-#         if customer.verify_password(current_password):
-#             if(new_password == confirm_new_password):  
-#                 customer.password=confirm_new_password 
-#                 customer.password = generate_password_hash(confirm_new_password) 
-#                 db.session.commit()
-#                 flash("password Has been Updated",'success')
-#                 return redirect(url_for('auth.profile', customer_id=customer.id))
-#             else:
-#                 flash("New password do not Match",'danger')
-#         else:
-#             flash("Incorrect Password",'danger') 
-#     return render_template('change_password.html',customer=customer)
-
-
 
 @auth.route('/change-password/<int:customer_id>', methods=['GET', 'POST'])
 @login_required
