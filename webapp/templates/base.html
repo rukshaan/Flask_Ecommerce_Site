@@ -85,7 +85,7 @@
             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
               {% if current_user.is_authenticated %}
               <li><a class="dropdown_item" href="/profile/{{current_user.id}}">Profile<i class="fa-solid fa-user"></i></a></li>
-              <li><a class="dropdown_item" href="#">Orders<i class="fa-solid fa-truck-fast"></i></a></li>
+              <li><a class="dropdown_item" href="/orders">Orders<i class="fa-solid fa-truck-fast"></i></a></li>
               <li><a class="dropdown_item" href="/logout">logout<i class="fa-solid fa-truck-fast"></i></a></li>
               {% else %}
               <li><a class="dropdown_item" href="/login">login<i class="fa-solid fa-right-to-bracket"></i></a></li>

@@ -130,33 +130,96 @@ def remove_cart():
         }
         return jsonify(data)
     
+    
+
+API_PUBLISHABLE_KEY='ISPubKey_test_4aaa7726-4542-4c38-a284-70afe13103fd'
+
+API_TOKEN='ISSecretKey_test_da9dd0d3-ecfd-4d1f-8b9e-7cbadf6c3f7b'
+
+
 @views.route('/place-order')   
 @login_required
 def place_order():
     customer_cart=Cart.query.filter_by(customer_link=current_user.id)
-    try:
-        if customer_cart:
+    if customer_cart:
+        
             total=0
-            for item in customer_cart:
-                total+=item.product.current_price *item.quantity
-                
-                service=APIService(token=API_TOKEN,publishable_key=API_PUBLISHABLE_KEY,test=True)
-                create_order_response=service.collect.mpesa_tk_push(phone_number='0778901558',email=current_user.email,amount=total+200,narrative='Purchase of goods')
+            total=sum(item.product.current_price *item.quantity for item in customer_cart)
+            service=APIService(token=API_TOKEN,test=True)    
+            try:
+                create_order_response = service.collect.mpesa_stk_push(
+                    phone_number='0778901558',
+                    email='shaanruk0309@gmail.com',
+                    amount=100,
+                    narrative='Purchase of goods'
+                )
 
-            for item in customer_cart:
-                new_order=Order()
-                new_order.quantity=item.quantity
-                new_order.price=item.current_price
-                new_order.status=create_order_response['invoice']['state']
-                new_order.payment_id=create_order_response['id']
-                new_order.product_link=item.customer_link
-                db.session.add(new_order)
-                product=Product.query.get(item.product_link)
-                product.in_stock=item.quantity
+                print("Response:",create_order_response)
+                # if create_order_response.get('status') != 'success':
+                #     flash('Payment failed, please try again.', 'danger')
+                #     return redirect("/")
+        
+            
+
+                for item in customer_cart:
+                    new_order=Order()
+                    new_order.quantity=item.quantity
+                    new_order.price=item.product.current_price
+                    new_order.status=create_order_response['invoice']['state'].capitalize()
+                    new_order.payment_id=create_order_response['id']
+                    new_order.customer_link = current_user.id  #  Assign the logged-in user's ID
+                    new_order.product_link = item.product_link  #  Ensure correct linkage
+                    db.session.add(new_order)
+                    
+                    product=Product.query.get(item.product_link)
+                    if product:
+                        product.in_stock-=item.quantity
+                    db.session.delete(item)
                 db.session.commit()
-                return "order Placed"
-                
-    except Exception as e:
-        print(e)
-        print("order is not placed")
-        return redirect("/")
+                flash("order is placed",'success')
+                return redirect('orders')
+            
+            except Exception as e:
+                print(e)
+                print("order is not placed")
+                flash('order is not placed','danger')
+                return redirect("/")
+    else :
+        flash('Your card is empty !!!','danger')
+
+
+@views.route('/orders')
+@login_required
+def order():
+    order=Order.query.filter_by(customer_link = current_user.id).all()
+    return render_template('orders.html',orders=order)
+
+# @views.route('/search')
+# def search():
+#     if request.method =='POST':
+#         search_query=request.form.get('search')
+#         items=Product.query.filter(Product.product_name.ilike(f'%{search_query}%')).all()
+        
+#         return render_template('search.html',items=items,cart=Cart.query.filter_by(customer_link=current_user.id).all()
+#                            if current_user.is_authenticated else [])
+#     return render_template("search.html")
+
+
+
+@views.route('/search', methods=['GET', 'POST'])
+def search():
+    if request.method == 'POST': 
+        search_query = request.form.get('search')
+
+        if search_query:  
+            items = Product.query.filter(Product.product_name.ilike(f'%{search_query}%')).all()
+            return render_template(
+                'search.html',
+                items=items,
+                cart=Cart.query.filter_by(customer_link=current_user.id).all()
+                if current_user.is_authenticated else []
+            )
+        else:
+            flash("Please enter a search query.", "warning")
+            return redirect('/search')
+    return render_template("search.html", items=[] if request.method == 'GET' else None)

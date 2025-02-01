@@ -1,8 +1,8 @@
 from flask import Blueprint,render_template,flash,send_from_directory,redirect
 from flask_login import login_required,current_user
-from .forms import ShopItemForms
+from .forms import ShopItemForms,OrderForms
 from werkzeug.utils import secure_filename
-from .models import Product
+from .models import Product,Order,Customer
 from . import db
 
 admin=Blueprint('admin',__name__)
@@ -124,4 +124,53 @@ def delete_item(item_id):
             print("Data not Deleted")
             flash('Data not Deleted','danger')
         return redirect('/shop_items')
+    return render_template('404.html')
+
+
+
+@admin.route('/view_orders')
+@login_required
+def order():
+    if current_user.id ==3:
+        orders=Order.query.all()
+        return render_template('view_orders.html',orders=orders)
+    return render_template('404.html')
+
+@admin.route('/update_orders/<int:order_id>',methods=['Get','POST'])
+@login_required
+def update_Orders(order_id):
+    if current_user.id ==3:
+        form=OrderForms()
+        order=Order.query.get(order_id)
+        if form.validate_on_submit():
+            status=form.order_status.data
+            order.status=status
+
+            try:
+                db.session.commit()
+                flash(f'Order {order_id} Updated Successfully','success')
+                return redirect('/view_orders')
+            except Exception as e:
+                print(e)
+                flash(f'Order {order_id}not Updated ','danger')
+                
+            
+        return render_template('order_update.html',form=form)
+    return render_template('404.html')
+
+
+@admin.route('/customers',methods=['Get','POST'])
+@login_required
+def customers():
+    if current_user.id==3:
+        customers=Customer.query.all()
+        return render_template('customers.html',customers=customers)
+    return render_template('404.html')
+
+@admin.route('/admin_page',methods=['Get','POST'])
+@login_required
+def amin_page():
+    if current_user.id==3:
+        customers=Customer.query.all()
+        return render_template('admin.html')
     return render_template('404.html')
