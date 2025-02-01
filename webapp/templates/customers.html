@@ -11,7 +11,8 @@
             <th scope="col">Username</th>
             <th scope="col">Email</th>
             <th scope="col">Date Joined</th>
-
+            <th scope="col">Add</th>
+            
         </tr>
 
     </thead>
@@ -22,6 +23,8 @@
         <td>{{ customer.username }}</td>
         <td>{{ customer.email }}</td>
         <td>{{ customer.date_joined }}</td>
+        <td><a href="" class="remove-cart btn btn-sm btn-secondary mr-3 " pid="{{customer.id}}">Remove</a></td>
+        
         </tr>
         {% endfor %}
     </tbody>

@@ -65,9 +65,8 @@ class Order(db.Model):
     price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(100), nullable=False)
     payment_id = db.Column(db.String(1000), nullable=False)
-
+    product_link = db.Column(db.Integer, db.ForeignKey('product.id', ondelete="SET NULL"), nullable=True)
     customer_link = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
-    product_link = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
 
     # customer
 

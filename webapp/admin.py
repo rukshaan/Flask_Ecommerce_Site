@@ -174,3 +174,34 @@ def amin_page():
         customers=Customer.query.all()
         return render_template('admin.html')
     return render_template('404.html')
+
+
+# @admin.route('/delete_customers/<int:customer_id>', methods=['POST'])
+# @login_required
+# def delete_customer(customer_id):
+#     # Ensure only admins can delete customers
+#     if not current_user.has_role('admin'):
+#         flash('Unauthorized access', 'danger')
+#         return render_template('404.html')
+
+#     try:
+#         customer_to_delete = Customer.query.get(customer_id)
+#         if not customer_to_delete:
+#             flash('Customer not found', 'danger')
+#             return redirect(url_for('customers'))
+
+#         print(f"Deleting customer {customer_to_delete.id}")
+
+#         # Delete customer
+#         db.session.delete(customer_to_delete)
+#         db.session.commit()
+
+#         flash('One customer Deleted', 'success')
+#         return redirect(url_for('customers'))
+#     except Exception as e:
+#         db.session.rollback()
+#         import traceback
+#         print("Error deleting customer:", traceback.format_exc())
+#         flash('Data not Deleted', 'danger')
+
+#     return redirect(url_for('customers'))
